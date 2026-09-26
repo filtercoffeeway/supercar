@@ -1,0 +1,500 @@
+<title>ES350 Camera ADAS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #151b22;
+    --ink-2: #4a5663;
+    --ink-3: #7b8794;
+    --line: #d5dce3;
+    --line-2: #e6ebf0;
+    --p1: #0f8a82;
+    --p1-soft: #e0f2f0;
+    --p2: #d4553f;
+    --p2-soft: #fbe7e3;
+    --p3: #b7791f;
+    --p3-soft: #f7eedd;
+    --neutral: #6b7785;
+    --display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1419;
+      --surface: #171e25;
+      --ink: #e8edf2;
+      --ink-2: #aab5c0;
+      --ink-3: #7c8894;
+      --line: #2c3742;
+      --line-2: #222b34;
+      --p1: #3cc2b7;
+      --p1-soft: #13302e;
+      --p2: #f07a64;
+      --p2-soft: #3a211d;
+      --p3: #e0a64a;
+      --p3-soft: #33291a;
+      --neutral: #8a96a3;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0f1419;
+    --surface: #171e25;
+    --ink: #e8edf2;
+    --ink-2: #aab5c0;
+    --ink-3: #7c8894;
+    --line: #2c3742;
+    --line-2: #222b34;
+    --p1: #3cc2b7;
+    --p1-soft: #13302e;
+    --p2: #f07a64;
+    --p2-soft: #3a211d;
+    --p3: #e0a64a;
+    --p3-soft: #33291a;
+    --neutral: #8a96a3;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 15px/1.6 var(--body);
+    padding-inline: 20px;
+    padding-block: 0 64px;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+  h2 { font-size: 30px; font-weight: 600; line-height: 1.15; }
+  h3 { font-size: 21px; font-weight: 600; line-height: 1.2; }
+  p { margin: 0; }
+  .eyebrow {
+    font: 500 12px/1 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+  }
+
+  /* Header */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    padding-block: 48px 36px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+  header.top h1 { font-size: clamp(40px, 7vw, 64px); font-weight: 700; line-height: 1; margin-top: 14px; }
+  header.top .sub { color: var(--ink-2); font-size: 17px; margin-top: 14px; max-width: 58ch; }
+  .meta { display: grid; gap: 6px; font: 400 13px/1.4 var(--mono); color: var(--ink-2); text-align: right; }
+  .meta b { color: var(--ink); font-weight: 500; }
+
+  section { display: flex; flex-direction: column; gap: 20px; }
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+  .lede { color: var(--ink-2); max-width: 68ch; }
+
+  /* Goal */
+  .goal-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: start; }
+  .goal-grid .statement { font-size: 18px; line-height: 1.55; max-width: 60ch; }
+  .goal-grid .statement strong { font-weight: 600; }
+  .phase-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .phase-list li {
+    display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start;
+    padding: 12px 14px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 6px;
+  }
+  .phase-list .n {
+    font: 600 13px/28px var(--mono); text-align: center; border-radius: 4px; height: 28px;
+  }
+  .phase-list .t { font-weight: 600; }
+  .phase-list .d { color: var(--ink-2); font-size: 14px; }
+  .n.p1 { background: var(--p1-soft); color: var(--p1); }
+  .n.p2 { background: var(--p2-soft); color: var(--p2); }
+  .n.p3 { background: var(--p3-soft); color: var(--p3); }
+
+  /* Architecture */
+  .diagram {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 20px; overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+  .node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+  .node.hw rect { fill: var(--bg); }
+  .node.p1 rect { stroke: var(--p1); stroke-width: 1.6; }
+  .node.p2 rect { stroke: var(--p2); stroke-width: 1.6; }
+  .node.p3 rect { stroke: var(--p3); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  .node text { fill: var(--ink); font: 500 13px var(--body); }
+  .node text.s { fill: var(--ink-3); font: 400 10.5px var(--mono); }
+  .edge { fill: none; stroke-width: 2; }
+  .edge.p1 { stroke: var(--p1); }
+  .edge.p2 { stroke: var(--p2); }
+  .edge.p3 { stroke: var(--p3); stroke-dasharray: 6 4; }
+  .elabel { font: 400 10.5px var(--mono); }
+  .elabel.p1 { fill: var(--p1); } .elabel.p2 { fill: var(--p2); } .elabel.p3 { fill: var(--p3); }
+  .zone { fill: none; stroke: var(--line); stroke-dasharray: 2 4; }
+  .zlabel { fill: var(--ink-3); font: 500 10px var(--mono); letter-spacing: 0.08em; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { display: inline-block; width: 22px; height: 0; border-top: 2.5px solid; }
+  .legend .l1 { border-color: var(--p1); }
+  .legend .l2 { border-color: var(--p2); }
+  .legend .l3 { border-color: var(--p3); border-top-style: dashed; }
+
+  .components { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-2); border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
+  .components div { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .components b { font-weight: 600; font-size: 14px; }
+  .components span { color: var(--ink-2); font-size: 13.5px; line-height: 1.5; }
+  .tag { font: 500 10.5px/1 var(--mono); padding: 3px 6px; border-radius: 3px; align-self: flex-start; margin-bottom: 4px; }
+  .tag.p1 { background: var(--p1-soft); color: var(--p1); }
+  .tag.p2 { background: var(--p2-soft); color: var(--p2); }
+  .tag.p3 { background: var(--p3-soft); color: var(--p3); }
+
+  /* BOM */
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+  th, td { text-align: left; padding: 11px 14px; vertical-align: top; border-bottom: 1px solid var(--line-2); }
+  th { font: 500 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); background: var(--bg); border-bottom-color: var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  td.qty, td.price { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.price { text-align: right; }
+  th.r { text-align: right; }
+  td .part { font-weight: 500; }
+  td .note { color: var(--ink-2); font-size: 13px; }
+  tr.group td { background: var(--bg); font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); padding-block: 9px; }
+  .fine { font-size: 13px; color: var(--ink-3); }
+
+  .install { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .install .box { background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .install ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+  .install ul b { color: var(--ink); font-weight: 600; }
+
+  /* Phases */
+  .phases { display: grid; gap: 16px; }
+  .phase {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    display: grid; grid-template-columns: 220px 1fr; overflow: hidden;
+  }
+  .phase .side { padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--line-2); }
+  .phase.p1 .side { background: var(--p1-soft); }
+  .phase.p2 .side { background: var(--p2-soft); }
+  .phase.p3 .side { background: var(--p3-soft); }
+  .phase .num { font: 700 44px/1 var(--display); }
+  .phase.p1 .num { color: var(--p1); } .phase.p2 .num { color: var(--p2); } .phase.p3 .num { color: var(--p3); }
+  .phase .side p { font-size: 13.5px; color: var(--ink-2); }
+  .phase .main { padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .phase .goal { font-size: 15.5px; max-width: 70ch; }
+  .phase ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: var(--ink-2); font-size: 14px; max-width: 75ch; }
+  .done { border-top: 1px solid var(--line-2); padding-top: 12px; font-size: 14px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline; }
+  .done .eyebrow { white-space: nowrap; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--ink-3); font-size: 13px; }
+
+  @media (max-width: 760px) {
+    header.top { grid-template-columns: 1fr; }
+    .meta { text-align: left; }
+    .goal-grid, .install { grid-template-columns: 1fr; }
+    .components { grid-template-columns: 1fr; }
+    .phase { grid-template-columns: 1fr; }
+    .phase .side { border-right: 0; border-bottom: 1px solid var(--line-2); }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Project proposal · VisionAutomation</div>
+      <h1>ES350 Camera ADAS</h1>
+      <p class="sub">A Raspberry Pi camera system for a Lexus ES350 that shows the blind spot on a dash display, then learns to detect what is in it.</p>
+    </div>
+    <div class="meta">
+      <div><b>Vehicle</b> Lexus ES350</div>
+      <div><b>Compute</b> Pi 5 + Hailo-8L</div>
+      <div><b>Display</b> 10.1" · 1280×800</div>
+      <div><b>Phases</b> 3</div>
+    </div>
+  </header>
+
+  <!-- Goal -->
+  <section id="goal">
+    <div class="sec-head">
+      <div class="eyebrow">Project goal</div>
+      <h2>See the adjacent lane without turning your head</h2>
+    </div>
+    <div class="goal-grid">
+      <p class="statement">
+        Put a 10-inch display in the cabin and a camera on each side of the car. When a turn signal comes on, the display shows that side's camera. From there, the same camera frames feed an on-board ML model that <strong>detects vehicles in the immediately adjacent lane</strong> on the freeway and flags them with low latency. A forward camera later extends the system to collision warning.
+        <br><br>
+        The Pi is in the car from Phase 1, so the cameras, display pipeline, and recorded footage all carry forward into the ML phases.
+      </p>
+      <ol class="phase-list">
+        <li><span class="n p1">P1</span><div><div class="t">Side view on turn signal</div><div class="d">Indicator on shows that side's camera on the display.</div></div></li>
+        <li><span class="n p2">P2</span><div><div class="t">Blind spot detection</div><div class="d">Alert on the display when a vehicle is in the adjacent lane.</div></div></li>
+        <li><span class="n p3">P3</span><div><div class="t">Forward collision detection</div><div class="d">Warn when the vehicle ahead is closing too fast.</div></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture">
+    <div class="sec-head">
+      <div class="eyebrow">Architecture</div>
+      <h2>One camera pipeline, three layers on top</h2>
+      <p class="lede">Every phase reads the same captured frames. Phase 1 routes them to the display. Phase 2 adds a detection branch that sends an alert back to the compositor. Phase 3 adds a forward camera and a time-to-collision estimate.</p>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 970 400" role="img" aria-label="Architecture: side and forward cameras feed frame capture. Capture feeds the compositor, which drives the display. The blinker listener selects the side. A Hailo detector and lane-filtering tracker send blind-spot alerts to the compositor. A time-to-collision estimator sends forward warnings. A recorder saves clips to the SSD.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill: var(--p1)"/></marker>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill: var(--p2)"/></marker>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill: var(--p3)"/></marker>
+        </defs>
+
+        <!-- zones -->
+        <rect class="zone" x="4" y="4" width="182" height="392" rx="6"/>
+        <text class="zlabel" x="14" y="386">VEHICLE</text>
+        <rect class="zone" x="204" y="4" width="626" height="392" rx="6"/>
+        <text class="zlabel" x="214" y="386">RASPBERRY PI 5 + AI HAT+</text>
+        <rect class="zone" x="840" y="80" width="126" height="88" rx="6"/>
+        <text class="zlabel" x="850" y="160">CABIN</text>
+
+        <!-- edges: phase 1 -->
+        <path class="edge p1" d="M170 42 H440" marker-end="url(#a1)"/>
+        <text class="elabel p1" x="250" y="34">12V signal, isolated</text>
+        <path class="edge p1" d="M610 42 H740 V96" marker-end="url(#a1)"/>
+        <text class="elabel p1" x="622" y="34">left / right / off</text>
+        <path class="edge p1" d="M170 118 H220" marker-end="url(#a1)"/>
+        <path class="edge p1" d="M170 182 H220" marker-end="url(#a1)"/>
+        <path class="edge p1" d="M370 124 H670" marker-end="url(#a1)"/>
+        <text class="elabel p1" x="470" y="116">selected side feed</text>
+        <path class="edge p1" d="M810 124 H854" marker-end="url(#a1)"/>
+        <path class="edge p1" d="M300 268 V354 H440" marker-end="url(#a1)"/>
+        <path class="edge p1" d="M610 354 H670" marker-end="url(#a1)"/>
+
+        <!-- edges: phase 2 -->
+        <path class="edge p2" d="M370 206 H440" marker-end="url(#a2)"/>
+        <path class="edge p2" d="M610 206 H670" marker-end="url(#a2)"/>
+        <path class="edge p2" d="M722 182 V152" marker-end="url(#a2)"/>
+        <text class="elabel p2" x="730" y="172">alert</text>
+
+        <!-- edges: phase 3 -->
+        <path class="edge p3" d="M170 246 H220" marker-end="url(#a3)"/>
+        <path class="edge p3" d="M580 230 V282 H670" marker-end="url(#a3)"/>
+        <path class="edge p3" d="M810 282 H822 V140 H812" marker-end="url(#a3)"/>
+        <text class="elabel p3" x="762" y="320">warning</text>
+
+        <!-- nodes: vehicle -->
+        <g class="node hw p1"><rect x="20" y="20" width="150" height="44" rx="5"/><text x="34" y="39">Turn signals</text><text class="s" x="34" y="54">L / R indicator wires</text></g>
+        <g class="node hw p1"><rect x="20" y="96" width="150" height="44" rx="5"/><text x="34" y="115">Left camera</text><text class="s" x="34" y="130">near mirror</text></g>
+        <g class="node hw p1"><rect x="20" y="160" width="150" height="44" rx="5"/><text x="34" y="179">Right camera</text><text class="s" x="34" y="194">near mirror</text></g>
+        <g class="node hw p3"><rect x="20" y="224" width="150" height="44" rx="5"/><text x="34" y="243">Forward camera</text><text class="s" x="34" y="258">Phase 3</text></g>
+
+        <!-- nodes: pi -->
+        <g class="node p1"><rect x="220" y="96" width="150" height="172" rx="5"/><text x="236" y="120">Frame capture</text><text class="s" x="236" y="138">all cameras,</text><text class="s" x="236" y="152">continuous</text></g>
+        <g class="node p1"><rect x="440" y="20" width="170" height="44" rx="5"/><text x="454" y="39">Blinker listener</text><text class="s" x="454" y="54">GPIO</text></g>
+        <g class="node p1"><rect x="670" y="96" width="140" height="56" rx="5"/><text x="684" y="119">Compositor</text><text class="s" x="684" y="136">feed + overlays</text></g>
+        <g class="node p2"><rect x="440" y="182" width="170" height="48" rx="5"/><text x="454" y="202">Vehicle detector</text><text class="s" x="454" y="218">Hailo-8L</text></g>
+        <g class="node p2"><rect x="670" y="182" width="140" height="48" rx="5"/><text x="684" y="202">Tracker</text><text class="s" x="684" y="218">adjacent-lane filter</text></g>
+        <g class="node p3"><rect x="670" y="258" width="140" height="48" rx="5"/><text x="684" y="278">TTC estimator</text><text class="s" x="684" y="294">ego lane, closing speed</text></g>
+        <g class="node p1"><rect x="440" y="330" width="170" height="48" rx="5"/><text x="454" y="350">Recorder</text><text class="s" x="454" y="366">raw clips</text></g>
+        <g class="node hw p1"><rect x="670" y="330" width="140" height="48" rx="5"/><text x="684" y="350">USB SSD</text><text class="s" x="684" y="366">training data</text></g>
+
+        <!-- nodes: cabin -->
+        <g class="node hw p1"><rect x="856" y="96" width="100" height="56" rx="5"/><text x="868" y="119">10" display</text><text class="s" x="868" y="136">HDMI</text></g>
+      </svg>
+    </div>
+
+    <div class="legend">
+      <span><i class="l1"></i>Phase 1 · side view and recording</span>
+      <span><i class="l2"></i>Phase 2 · blind spot detection</span>
+      <span><i class="l3"></i>Phase 3 · forward collision</span>
+    </div>
+
+    <div class="components">
+      <div><span class="tag p1">P1</span><b>Frame capture</b><span>Reads both side cameras continuously, whether or not the display is showing them.</span></div>
+      <div><span class="tag p1">P1</span><b>Blinker listener</b><span>Reads the turn-signal state and tells the compositor which side to show.</span></div>
+      <div><span class="tag p1">P1</span><b>Compositor</b><span>Shows the selected feed full-screen and draws alerts on top. Idle when no indicator is on.</span></div>
+      <div><span class="tag p1">P1</span><b>Recorder</b><span>Saves raw clips to the SSD to build the training and evaluation dataset.</span></div>
+      <div><span class="tag p2">P2</span><b>Detector + tracker</b><span>Detects vehicles on the Hailo, tracks them across frames, and keeps only those in the adjacent lane.</span></div>
+      <div><span class="tag p3">P3</span><b>TTC estimator</b><span>Tracks the vehicle ahead, estimates distance and closing speed, and derives time-to-collision.</span></div>
+    </div>
+  </section>
+
+  <!-- BOM -->
+  <section id="bom">
+    <div class="sec-head">
+      <div class="eyebrow">Bill of materials</div>
+      <h2>Hardware</h2>
+      <p class="lede">Develop on a cheap bench display, then install a sunlight-readable panel in the car. Digital cameras are used from the start so every frame is available to the ML pipeline.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Part</th><th>Qty</th><th>Phase</th><th class="r">Price</th></tr>
+        </thead>
+        <tbody>
+          <tr class="group"><td colspan="5">Compute and storage</td></tr>
+          <tr>
+            <td>Compute</td>
+            <td><div class="part">Raspberry Pi 5</div><div class="note">Under a seat or in the center console, where it stays cooler than the dash.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+          <tr>
+            <td>ML accelerator</td>
+            <td><div class="part">Raspberry Pi AI HAT+ (Hailo-8L, 13 TOPS)</div><div class="note">Uses the Pi 5's single PCIe lane.</div></td>
+            <td class="qty">1</td><td><span class="tag p2">P2</span></td><td class="price">~$70</td>
+          </tr>
+          <tr>
+            <td>Storage</td>
+            <td><div class="part">USB 3 external SSD, 256GB+</div><div class="note">USB rather than NVMe, so it doesn't compete with the AI HAT for PCIe.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">$45–60</td>
+          </tr>
+
+          <tr class="group"><td colspan="5">Cameras</td></tr>
+          <tr>
+            <td>Side cameras</td>
+            <td><div class="part">Digital camera, weatherproof</div><div class="note">Mounted under or near each mirror. Digital, not analog, so frames go straight to the Pi.</div></td>
+            <td class="qty">2</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+          <tr>
+            <td>Forward camera</td>
+            <td><div class="part">Digital camera</div><div class="note">Forward-facing, for collision detection.</div></td>
+            <td class="qty">1</td><td><span class="tag p3">P3</span></td><td class="price">TBD</td>
+          </tr>
+
+          <tr class="group"><td colspan="5">Display</td></tr>
+          <tr>
+            <td>Bench display</td>
+            <td><div class="part">Elecrow 10.1" IPS, 1280×800</div><div class="note">For indoor development. Too dim for direct sun.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">$65.90</td>
+          </tr>
+          <tr>
+            <td>Car display</td>
+            <td><div class="part">Xenarc 1022YH 10.1", 1280×800, 1200 nits</div><div class="note">Anti-reflective, 9–36V DC input, rated -20°C to 70°C, VESA 75. No touch, which isn't needed.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+          <tr>
+            <td>Video cable</td>
+            <td><div class="part">Short micro-HDMI to HDMI</div><div class="note">Keep it short and secured. Loose HDMI is a common in-car glitch.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+
+          <tr class="group"><td colspan="5">Vehicle integration</td></tr>
+          <tr>
+            <td>Turn-signal input</td>
+            <td><div class="part">Tap on left and right indicator circuits</div><div class="note">Isolate the 12V signal before it reaches the Pi's GPIO.</div></td>
+            <td class="qty">2</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+          <tr>
+            <td>Power</td>
+            <td><div class="part">12V to 5V supply for the Pi</div><div class="note">The display runs directly on 12V.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+          <tr>
+            <td>Display mount</td>
+            <td><div class="part">RAM Mounts arm + RAM VESA 75 plate</div><div class="note">Attaches to a seat bolt or the side of the center console.</div></td>
+            <td class="qty">1</td><td><span class="tag p1">P1</span></td><td class="price">TBD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">Prices are the figures found so far. TBD items still need a specific part picked.</p>
+
+    <div class="install">
+      <div class="box">
+        <h3>Display requirements</h3>
+        <ul>
+          <li><b>1000+ nits</b> so it stays readable in direct sun.</li>
+          <li><b>1280×800</b> resolution.</li>
+          <li><b>12V input</b> so it runs straight from car power.</li>
+          <li><b>No logo or "No Signal" screen</b> at boot.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Mounting</h3>
+        <ul>
+          <li><b>Location:</b> lower center, below the factory screen, angled toward the driver. Adjustable, no drilling. Check that it doesn't cover the climate controls.</li>
+          <li><b>Fixing:</b> bolted through the VESA holes. No adhesive, vent, or suction mounts, since the panel weighs about 3 lb.</li>
+          <li><b>Keep clear of</b> the windshield view and airbag zones (passenger dash, knee area).</li>
+          <li><b>Cables</b> run under the trim panels.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Phases -->
+  <section id="phases">
+    <div class="sec-head">
+      <div class="eyebrow">Project phases</div>
+      <h2>Three phases, each building on the last</h2>
+    </div>
+
+    <div class="phases">
+      <article class="phase p1">
+        <div class="side">
+          <div class="num">01</div>
+          <h3>Side view on turn signal</h3>
+          <p>No ML. Hardware, wiring, and the display pipeline.</p>
+        </div>
+        <div class="main">
+          <p class="goal">Turn on the left indicator and the left camera appears on the display. Same for the right. No need to look over your shoulder.</p>
+          <ul>
+            <li>Install both side cameras and the display.</li>
+            <li>Tap the turn-signal state into the Pi.</li>
+            <li>Stream the selected side to the display with minimal latency.</li>
+            <li>Record drives to the SSD from day one to build the Phase 2 dataset.</li>
+            <li>Drive with the setup for a couple of weeks before permanent mounting.</li>
+          </ul>
+          <div class="done"><span class="eyebrow">Done when</span><span>The correct side feed appears quickly and reliably whenever the indicator is on, in daylight and at night.</span></div>
+        </div>
+      </article>
+
+      <article class="phase p2">
+        <div class="side">
+          <div class="num">02</div>
+          <h3>Blind spot detection</h3>
+          <p>The core ML problem. Freeway driving, adjacent lane only.</p>
+        </div>
+        <div class="main">
+          <p class="goal">Show an alert, such as a red dot, on the display when a vehicle is in the adjacent lane.</p>
+          <ul>
+            <li>Only vehicles in the <b>immediately adjacent lane</b>. Ignore vehicles two lanes over, oncoming traffic, and parked objects.</li>
+            <li>Run a vehicle detector on the Hailo using the side camera frames.</li>
+            <li>Track objects across frames and filter to the adjacent lane, starting with a region of interest and moving to a learned lane position.</li>
+            <li>Draw the alert on the side view, and alert when the indicator is on toward an occupied lane.</li>
+            <li>Label recorded footage and fine-tune or train the model for this camera angle.</li>
+            <li>Priorities: low latency, few false alerts, no missed vehicles in the lane.</li>
+          </ul>
+          <div class="done"><span class="eyebrow">Done when</span><span>Alerts match real blind-spot occupancy on recorded and live freeway drives, with acceptable latency and false-alert rate.</span></div>
+        </div>
+      </article>
+
+      <article class="phase p3">
+        <div class="side">
+          <div class="num">03</div>
+          <h3>Forward collision detection</h3>
+          <p>Adds a forward camera and a time-to-collision estimate.</p>
+        </div>
+        <div class="main">
+          <p class="goal">Warn the driver when the vehicle ahead is closing too fast.</p>
+          <ul>
+            <li>Add a forward-facing camera.</li>
+            <li>Detect vehicles in the ego lane and track them over time.</li>
+            <li>Estimate distance and closing speed, and derive time-to-collision.</li>
+            <li>Show a visual warning when time-to-collision drops below a threshold.</li>
+          </ul>
+          <div class="done"><span class="eyebrow">Done when</span><span>Warnings trigger reliably when closing on a vehicle, without frequent false alarms in normal following traffic.</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>VisionAutomation · Lexus ES350 Camera ADAS</footer>
+</div>
